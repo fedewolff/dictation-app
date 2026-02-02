@@ -139,10 +139,10 @@ class ControlPanelWindow:
         scroll_view.setAutohidesScrollers_(True)
         scroll_view.setBorderType_(0)
 
-        content_height = 700
+        content_height = 780
         content_view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, width, content_height))
 
-        y_pos = content_height - 40
+        y_pos = content_height - 50
 
         # Title
         title = NSTextField.alloc().initWithFrame_(
