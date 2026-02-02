@@ -129,11 +129,56 @@ generation:
   model: "kimi-k2.5:cloud"
 ```
 
+## First Time Setup (Important!)
+
+When you first run the app, macOS may block it. Follow these steps:
+
+### 1. Allow the app to open
+
+**If nothing happens when you double-click:**
+
+1. Open **System Settings → Privacy & Security**
+2. Scroll down — you'll see "Dictation was blocked"
+3. Click **Open Anyway**
+
+**Or from terminal:**
+```bash
+xattr -cr ~/Desktop/Dictation.app
+xattr -cr ~/Desktop/"Dictation Controls.app"
+```
+
+### 2. Grant Accessibility permissions
+
+**This is required for the hotkey to work:**
+
+1. Open **System Settings → Privacy & Security → Accessibility**
+2. Click the **+** button
+3. Add `Dictation.app` from your Desktop
+4. Make sure the toggle is **ON**
+
+### 3. Grant Microphone access
+
+macOS will prompt you on first recording. Click **Allow**.
+
+### 4. Make sure Ollama is running (for drafting mode)
+
+```bash
+ollama serve
+```
+
+Keep this running in the background, or Ollama will start automatically if installed via the macOS app.
+
 ## Troubleshooting
 
+### Nothing happens when I click the app
+1. Check System Settings → Privacy & Security for "blocked" message
+2. Run `xattr -cr ~/Desktop/Dictation.app` in terminal
+3. Try again
+
 ### Hotkey not working
-- Grant Accessibility permissions in System Settings → Privacy & Security → Accessibility
+- Grant Accessibility permissions (see above)
 - Restart the app after granting permissions
+- Make sure no other app is using `Cmd+Shift+Space`
 
 ### Text not appearing
 - Make sure you pressed `Enter` to stop recording
@@ -142,10 +187,17 @@ generation:
 ### Drafting mode not working
 - Make sure Ollama is running: `ollama serve`
 - Verify the model is installed: `ollama list`
+- Should show `kimi-k2.5:cloud`
 
-### App won't open from Desktop shortcut
-- Right-click the app → Open (first time only)
-- Or run `xattr -cr ~/Desktop/Dictation.app` in terminal
+### "Model not found" error
+```bash
+ollama pull kimi-k2.5:cloud
+```
+
+### App starts but no window appears
+- The app runs in the **menu bar** (top right of screen)
+- Look for "Dictation" text in your menu bar
+- Or use `Dictation Controls.app` to get a visible window
 
 ## License
 
