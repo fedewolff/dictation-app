@@ -5,56 +5,29 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 APP_PATH="$HOME/Desktop/Dictation Controls.app"
+PYTHON_PATH="$SCRIPT_DIR/venv/bin/python3"
 
 echo "Creating Dictation Controls shortcut..."
 
 # Remove existing
 rm -rf "$APP_PATH" 2>/dev/null
 
-# Create app structure
-mkdir -p "$APP_PATH/Contents/MacOS"
-mkdir -p "$APP_PATH/Contents/Resources"
+# Create Automator-style app using osacompile
+osacompile -o "$APP_PATH" << APPLESCRIPT
+on run
+    do shell script "pkill -9 -f 'python.*src.main' 2>/dev/null || true"
+    delay 0.3
+    do shell script "cd '$SCRIPT_DIR' && '$PYTHON_PATH' -m src.main --control-panel &> /dev/null &"
+end run
+APPLESCRIPT
 
-# Create the executable script
-cat > "$APP_PATH/Contents/MacOS/DictationControls" << EOF
-#!/bin/bash
-cd "$SCRIPT_DIR"
-source venv/bin/activate
-exec python3 -m src.main --control-panel "\$@"
-EOF
-chmod +x "$APP_PATH/Contents/MacOS/DictationControls"
+# Update Info.plist
+/usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'Dictation needs microphone access'" "$APP_PATH/Contents/Info.plist" 2>/dev/null
 
-# Create Info.plist
-cat > "$APP_PATH/Contents/Info.plist" << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleExecutable</key>
-    <string>DictationControls</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.local.dictation-controls</string>
-    <key>CFBundleName</key>
-    <string>Dictation Controls</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleVersion</key>
-    <string>1.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Dictation needs microphone access for speech recognition.</string>
-</dict>
-</plist>
-EOF
-
-# Remove quarantine attribute
+# Remove quarantine
 xattr -cr "$APP_PATH" 2>/dev/null
 
 echo ""
 echo "Done! 'Dictation Controls.app' created on Desktop."
 echo ""
-echo "This shortcut opens the Dictation app with the control panel visible."
-echo ""
-echo "First launch: Right-click -> Open -> Open"
-echo "After that, double-click works normally."
+echo "IMPORTANT: Add this app to Accessibility permissions in System Settings."

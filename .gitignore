@@ -45,6 +45,7 @@ Thumbs.db
 # Project specific
 .claude/
 *.log
+dictation.log
 *.wav
 *.mp3
 
