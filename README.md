@@ -60,7 +60,7 @@ pip install -r requirements.txt
 # Install Ollama from https://ollama.com/download
 
 # Pull the model (runs 100% locally, no login needed)
-ollama pull llama3.2:latest
+ollama pull glm4:latest
 
 # Start Ollama server
 ollama serve
@@ -128,7 +128,7 @@ model:
 generation:
   enabled: true
   provider: "ollama"
-  model: "llama3.2:latest"
+  model: "glm4:latest"
 ```
 
 ## First Time Setup (Important!)
@@ -193,11 +193,11 @@ Keep this running in the background, or Ollama will start automatically if insta
 ### Drafting mode not working
 - Make sure Ollama is running: `ollama serve`
 - Verify the model is installed: `ollama list`
-- Should show `llama3.2:latest`
+- Should show `glm4:latest`
 
 ### "Model not found" error
 ```bash
-ollama pull llama3.2:latest
+ollama pull glm4:latest
 ```
 
 ### App starts but no window appears

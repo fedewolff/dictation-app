@@ -26,7 +26,7 @@ behavior:
 generation:
   enabled: true  # Set to false to use simple transcription mode
   provider: "ollama"  # ollama (local, free), openai, or anthropic
-  model: "llama3.2:latest"  # Fast local model, no auth needed
+  model: "glm4:latest"  # GLM-4 local model, best for drafting messages
   api_key: ""  # Only needed for openai/anthropic
   ollama_host: "http://localhost:11434"  # Ollama server URL
 
