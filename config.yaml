@@ -26,7 +26,7 @@ behavior:
 generation:
   enabled: true  # Set to false to use simple transcription mode
   provider: "ollama"  # ollama (local, free), openai, or anthropic
-  model: "kimi-k2.5:cloud"  # Kimi K2.5 - Moonshot AI's multimodal model
+  model: "llama3.2:latest"  # Fast local model, no auth needed
   api_key: ""  # Only needed for openai/anthropic
   ollama_host: "http://localhost:11434"  # Ollama server URL
 

@@ -59,17 +59,12 @@ pip install -r requirements.txt
 ```bash
 # Install Ollama from https://ollama.com/download
 
-# Login to Ollama (required for cloud models)
-ollama login
-
-# Pull the model
-ollama pull kimi-k2.5:cloud
+# Pull the model (runs 100% locally, no login needed)
+ollama pull llama3.2:latest
 
 # Start Ollama server
 ollama serve
 ```
-
-> **Note:** `kimi-k2.5:cloud` requires Ollama authentication. Run `ollama login` first and follow the prompts to sign in.
 
 ### 4. Create desktop shortcuts
 
@@ -133,7 +128,7 @@ model:
 generation:
   enabled: true
   provider: "ollama"
-  model: "kimi-k2.5:cloud"
+  model: "llama3.2:latest"
 ```
 
 ## First Time Setup (Important!)
@@ -198,12 +193,11 @@ Keep this running in the background, or Ollama will start automatically if insta
 ### Drafting mode not working
 - Make sure Ollama is running: `ollama serve`
 - Verify the model is installed: `ollama list`
-- Should show `kimi-k2.5:cloud`
+- Should show `llama3.2:latest`
 
-### "Model not found" or authentication error
+### "Model not found" error
 ```bash
-ollama login
-ollama pull kimi-k2.5:cloud
+ollama pull llama3.2:latest
 ```
 
 ### App starts but no window appears
