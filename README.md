@@ -153,8 +153,12 @@ xattr -cr ~/Desktop/"Dictation Controls.app"
 
 1. Open **System Settings → Privacy & Security → Accessibility**
 2. Click the **+** button
-3. Add `Dictation.app` from your Desktop
-4. Make sure the toggle is **ON**
+3. Add **both** of these:
+   - `Dictation.app` from your Desktop
+   - `Terminal.app` (from Applications → Utilities)
+4. Make sure both toggles are **ON**
+
+> **Note:** Terminal needs permission because the app shortcut runs through it. Without this, the app won't start from the Desktop shortcut.
 
 ### 3. Grant Microphone access
 
