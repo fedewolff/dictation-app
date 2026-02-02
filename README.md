@@ -58,11 +58,18 @@ pip install -r requirements.txt
 
 ```bash
 # Install Ollama from https://ollama.com/download
-# Then pull the model:
-ollama --version
-ollama serve
+
+# Login to Ollama (required for cloud models)
+ollama login
+
+# Pull the model
 ollama pull kimi-k2.5:cloud
+
+# Start Ollama server
+ollama serve
 ```
+
+> **Note:** `kimi-k2.5:cloud` requires Ollama authentication. Run `ollama login` first and follow the prompts to sign in.
 
 ### 4. Create desktop shortcuts
 
@@ -193,8 +200,9 @@ Keep this running in the background, or Ollama will start automatically if insta
 - Verify the model is installed: `ollama list`
 - Should show `kimi-k2.5:cloud`
 
-### "Model not found" error
+### "Model not found" or authentication error
 ```bash
+ollama login
 ollama pull kimi-k2.5:cloud
 ```
 

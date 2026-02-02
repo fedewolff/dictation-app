@@ -24,7 +24,6 @@ try:
         NSPopUpButton,
         NSBox,
         NSBoxSeparator,
-        NSScrollView,
     )
     from Foundation import NSObject
 
@@ -84,8 +83,7 @@ class ControlPanelWindow:
     def _setup_window(self) -> None:
         """Set up the control panel window using AppKit."""
         width = 340
-        height = 420
-        content_height = 450  # Taller than window to enable scrolling
+        height = 450
 
         # Get screen dimensions and center window
         screen = NSScreen.mainScreen()
@@ -114,19 +112,12 @@ class ControlPanelWindow:
         # Configure window
         self._window.setTitle_("Dictation Controls")
         self._window.setReleasedWhenClosed_(False)
-        self._window.setMinSize_(NSMakeRect(0, 0, 300, 350).size)
+        self._window.setMinSize_(NSMakeRect(0, 0, 300, 400).size)
 
-        # Create scroll view
-        scroll_view = NSScrollView.alloc().initWithFrame_(NSMakeRect(0, 0, width, height))
-        scroll_view.setHasVerticalScroller_(True)
-        scroll_view.setHasHorizontalScroller_(False)
-        scroll_view.setAutohidesScrollers_(True)
-        scroll_view.setBorderType_(0)  # No border
+        # Create content view
+        content_view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, width, height))
 
-        # Create content view (document view for scroll)
-        content_view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, width, content_height))
-
-        y_pos = content_height - 50
+        y_pos = height - 50
 
         # Title
         title = NSTextField.alloc().initWithFrame_(
@@ -305,9 +296,7 @@ class ControlPanelWindow:
         quit_btn.setAction_("quitApp:")
         content_view.addSubview_(quit_btn)
 
-        # Set content view in scroll view
-        scroll_view.setDocumentView_(content_view)
-        self._window.setContentView_(scroll_view)
+        self._window.setContentView_(content_view)
 
     def show(self) -> None:
         """Show the control panel window."""
