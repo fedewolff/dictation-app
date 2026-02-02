@@ -137,19 +137,34 @@ Use the **menu bar icon** or **Dictation Controls** app to switch between:
 
 ## Configuration
 
-Edit `config.yaml` to customize:
+### Using Dictation Controls (Recommended)
+
+Open `Dictation Controls.app` to change settings directly from the UI:
+
+| Setting | Options | Description |
+|---------|---------|-------------|
+| **Mode** | Drafting, Transcription | AI-enhanced vs exact speech-to-text |
+| **Language** | Auto-detect, English, Spanish | Language for transcription |
+| **Whisper Model** | tiny, base, small, medium, large-v3 | Larger = more accurate but slower |
+| **AI Model** | glm4:latest, llama3.2:latest, llama3.1:8b, mistral:latest, qwen2.5:7b | Model for drafting mode |
+| **Start Key** | cmd+shift+space (default) | Hotkey to start recording |
+| **Stop Key** | enter (default) | Key to stop recording |
+
+**Note:** Restart the app after changing hotkeys.
+
+### Manual Configuration
+
+You can also edit `config.yaml` directly:
 
 ```yaml
-# Hotkey
 behavior:
   hotkey: "cmd+shift+space"
   stop_key: "enter"
 
-# Whisper model (larger = more accurate but slower)
 model:
   name: "large-v3"  # Options: tiny, base, small, medium, large-v3
+  language: "auto"  # Options: auto, en, es
 
-# AI model for drafting mode
 generation:
   enabled: true
   provider: "ollama"
