@@ -68,33 +68,58 @@ ollama serve
 
 ### 4. Create desktop shortcuts
 
+**IMPORTANT: Run these commands from Terminal (don't double-click the .sh files):**
+
 ```bash
+cd ~/Desktop/dictation-app
 ./create_shortcut.sh              # Main app (runs in menu bar)
 ./create_control_panel_shortcut.sh  # Control panel for settings
 ```
 
-### 5. Grant permissions
+### 5. Grant permissions (IMPORTANT!)
 
-The app needs permissions to work. macOS will prompt you on first run, or you can set them manually:
+The app needs permissions to work. **This is the most common reason the app doesn't start.**
 
-**System Settings → Privacy & Security:**
+#### Add Terminal.app to Accessibility:
 
-- **Accessibility** — Add `Dictation.app` and/or Terminal (for hotkey detection and text pasting)
-- **Microphone** — Allow access when prompted
+1. Open **System Settings → Privacy & Security → Accessibility**
+2. Click the **+** button
+3. Press `Cmd+Shift+G` and type: `/Applications/Utilities/Terminal.app`
+4. Click **Open**
+5. Make sure the toggle is **ON**
+
+#### Add the Dictation apps to Accessibility:
+
+1. In the same Accessibility settings, click **+** again
+2. Navigate to your Desktop and add `Dictation.app`
+3. Also add `Dictation Controls.app`
+4. Make sure both toggles are **ON**
+
+#### Grant Microphone access:
+
+macOS will prompt you on first recording. Click **Allow**.
+
+### 6. Make sure Ollama is running
+
+```bash
+ollama serve
+```
+
+Keep this running in the background, or Ollama will start automatically if installed via the macOS app.
 
 ## Usage
 
 ### Starting the App
 
-**Option 1:** Double-click `Dictation.app` on your Desktop
+**Option 1:** Double-click `Dictation Controls.app` on your Desktop (shows settings panel)
 
-**Option 2:** Double-click `Dictation Controls.app` to start with the settings panel visible
+**Option 2:** Double-click `Dictation.app` on your Desktop (runs in menu bar only)
 
 **Option 3:** From terminal:
 ```bash
-cd dictation-app
+cd ~/Desktop/dictation-app
 source venv/bin/activate
-python3 -m src.main
+python3 -m src.main --control-panel
 ```
 
 ### Recording
@@ -102,7 +127,7 @@ python3 -m src.main
 1. Press `Cmd+Shift+Space` to start recording
 2. Speak your message
 3. Press `Enter` to stop
-4. Text is copied to your clipboard — just paste it anywhere
+4. Text is copied to your clipboard — just paste it anywhere with `Cmd+V`
 
 ### Switching Modes
 
@@ -131,79 +156,65 @@ generation:
   model: "glm4:latest"
 ```
 
-## First Time Setup (Important!)
-
-When you first run the app, macOS may block it. Follow these steps:
-
-### 1. Allow the app to open
-
-**If nothing happens when you double-click:**
-
-1. Open **System Settings → Privacy & Security**
-2. Scroll down — you'll see "Dictation was blocked"
-3. Click **Open Anyway**
-
-**Or from terminal:**
-```bash
-xattr -cr ~/Desktop/Dictation.app
-xattr -cr ~/Desktop/"Dictation Controls.app"
-```
-
-### 2. Grant Accessibility permissions
-
-**This is required for the hotkey to work:**
-
-1. Open **System Settings → Privacy & Security → Accessibility**
-2. Click the **+** button
-3. Add **both** of these:
-   - `Dictation.app` from your Desktop
-   - `Terminal.app` (from Applications → Utilities)
-4. Make sure both toggles are **ON**
-
-> **Note:** Terminal needs permission because the app shortcut runs through it. Without this, the app won't start from the Desktop shortcut.
-
-### 3. Grant Microphone access
-
-macOS will prompt you on first recording. Click **Allow**.
-
-### 4. Make sure Ollama is running (for drafting mode)
-
-```bash
-ollama serve
-```
-
-Keep this running in the background, or Ollama will start automatically if installed via the macOS app.
-
 ## Troubleshooting
 
-### Nothing happens when I click the app
-1. Check System Settings → Privacy & Security for "blocked" message
-2. Run `xattr -cr ~/Desktop/Dictation.app` in terminal
-3. Try again
+### Nothing happens when I double-click the app
+
+**Most common cause: Missing permissions.**
+
+1. Make sure **Terminal.app** has Accessibility permission
+2. Make sure the **Dictation app** has Accessibility permission
+3. Run this in Terminal to remove quarantine:
+   ```bash
+   xattr -cr ~/Desktop/Dictation.app
+   xattr -cr ~/Desktop/"Dictation Controls.app"
+   ```
+
+### How to add Terminal.app to Accessibility
+
+1. Open **System Settings → Privacy & Security → Accessibility**
+2. Click **+**
+3. Press `Cmd+Shift+G` and type: `/Applications/Utilities/Terminal.app`
+4. Click **Open**
+
+### App seems stuck or won't restart
+
+Kill the app and try again:
+```bash
+pkill -f "src.main"
+```
 
 ### Hotkey not working
-- Grant Accessibility permissions (see above)
+
+- Grant Accessibility permissions to both Terminal.app and Dictation.app
 - Restart the app after granting permissions
 - Make sure no other app is using `Cmd+Shift+Space`
 
 ### Text not appearing
+
 - Make sure you pressed `Enter` to stop recording
 - Check that text was copied (try `Cmd+V` to paste)
 
 ### Drafting mode not working
+
 - Make sure Ollama is running: `ollama serve`
 - Verify the model is installed: `ollama list`
 - Should show `glm4:latest`
-
-### "Model not found" error
-```bash
-ollama pull glm4:latest
-```
+- If not, run: `ollama pull glm4:latest`
 
 ### App starts but no window appears
+
 - The app runs in the **menu bar** (top right of screen)
 - Look for "Dictation" text in your menu bar
 - Or use `Dictation Controls.app` to get a visible window
+
+### Can't double-click .sh files to run them
+
+That's normal on macOS. Run them from Terminal instead:
+```bash
+cd ~/Desktop/dictation-app
+./create_control_panel_shortcut.sh
+```
 
 ## License
 
