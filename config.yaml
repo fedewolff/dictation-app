@@ -1,0 +1,44 @@
+# Dictation App Configuration
+
+# Audio settings
+audio:
+  input_device: "default"  # or specific device name
+  sample_rate: 16000
+
+# Model settings
+model:
+  name: "large-v3"  # tiny, base, small, medium, large-v3
+  language: "auto"  # auto, en, es
+  compute_type: "float16"  # float32, float16, int8
+  device: "auto"  # cpu, cuda, mps (Apple Silicon)
+
+# Behavior
+behavior:
+  mode: "separate_keys"  # push_to_talk, toggle, separate_keys, one_shot
+  hotkey: "cmd+shift+space"
+  stop_key: "enter"  # Key to stop recording in separate_keys mode
+  silence_threshold_ms: 500
+  play_sounds: true
+  show_floating_indicator: true
+  insertion_method: "clipboard_only"  # auto, clipboard, keystroke, clipboard_only
+
+# Generation settings (for intent-to-message drafting)
+generation:
+  enabled: true  # Set to false to use simple transcription mode
+  provider: "ollama"  # ollama (local, free), openai, or anthropic
+  model: "kimi-k2.5:cloud"  # Kimi K2.5 - Moonshot AI's multimodal model
+  api_key: ""  # Only needed for openai/anthropic
+  ollama_host: "http://localhost:11434"  # Ollama server URL
+
+# Voice commands (only used when generation.enabled is false)
+voice_commands:
+  enabled: true
+  custom: {}
+    # Example custom replacements:
+    # "firma": "Wolff"
+    # "correo": "wolff@example.com"
+
+# Post-processing (only used when generation.enabled is false)
+post_processing:
+  auto_capitalize: true
+  auto_punctuate: true

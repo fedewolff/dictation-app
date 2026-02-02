@@ -1,0 +1,28 @@
+# Core transcription
+faster-whisper>=0.10.0
+ctranslate2>=3.24.0
+
+# LLM for generative drafting
+ollama>=0.2.0  # Local LLM (recommended - free, no API key needed)
+anthropic>=0.40.0  # Claude API
+
+# Audio handling
+sounddevice>=0.4.6
+numpy>=1.24.0
+
+# Voice Activity Detection
+silero-vad>=5.1
+
+# System integration (macOS)
+pynput>=1.7.6
+pyautogui>=0.9.54
+rumps>=0.4.0
+pyobjc-framework-Cocoa>=9.0
+pyobjc-framework-Quartz>=9.0
+
+# Configuration
+pyyaml>=6.0
+
+# PyTorch for Silero VAD
+torch>=2.0.0
+torchaudio>=2.0.0
