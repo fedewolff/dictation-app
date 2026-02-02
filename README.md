@@ -59,6 +59,8 @@ pip install -r requirements.txt
 ```bash
 # Install Ollama from https://ollama.com/download
 # Then pull the model:
+ollama --version
+ollama serve
 ollama pull kimi-k2.5:cloud
 ```
 
