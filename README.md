@@ -59,11 +59,11 @@ pip install -r requirements.txt
 ```bash
 # Install Ollama from https://ollama.com/download
 
-# Pull the model (runs 100% locally, no login needed)
-ollama pull glm4:latest
-
-# Start Ollama server
+# Start Ollama server (keep this running)
 ollama serve
+
+# In a new terminal, pull the model (runs 100% locally, no login needed)
+ollama pull glm4:latest
 ```
 
 ### 4. Create desktop shortcuts
