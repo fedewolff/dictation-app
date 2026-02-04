@@ -78,19 +78,40 @@ cd ~/Desktop/dictation-app
 
 ### 5. Grant permissions (IMPORTANT!)
 
-The app needs permissions to work. **This is the most common reason the app doesn't start.**
+The app needs permissions to work. **This is the most common reason the hotkey doesn't work.**
 
-#### Add Terminal.app to Accessibility:
+#### Add your Python interpreter to Accessibility (REQUIRED for hotkeys):
+
+The hotkey system uses `pynput` which requires the **Python interpreter itself** to have Accessibility permissions. This is the most important step!
 
 1. Open **System Settings → Privacy & Security → Accessibility**
 2. Click the **+** button
-3. Press `Cmd+Shift+G` and type: `/Applications/Utilities/Terminal.app`
-4. Click **Open**
-5. Make sure the toggle is **ON**
+3. Press `Cmd+Shift+G` to open "Go to folder"
+4. Find your Python path by running this in Terminal:
+   ```bash
+   cd ~/Desktop/dictation-app
+   ls -la venv/bin/python3
+   ```
+   This will show something like: `venv/bin/python3 -> /path/to/python3`
+5. Add the **target path** (the path after the arrow) to Accessibility
+   - Common paths:
+     - Homebrew: `/opt/homebrew/bin/python3` or `/usr/local/bin/python3`
+     - Miniconda/Anaconda: `/Users/YOUR_USERNAME/miniconda3/bin/python3.13`
+     - System: `/usr/bin/python3`
+6. If your Python has a `.app` bundle (common with conda), also add it:
+   - Miniconda: `/Users/YOUR_USERNAME/miniconda3/python.app`
+7. Make sure the toggle is **ON**
+
+#### Add Terminal.app to Accessibility:
+
+1. In the same Accessibility settings, click **+**
+2. Press `Cmd+Shift+G` and type: `/Applications/Utilities/Terminal.app`
+3. Click **Open**
+4. Make sure the toggle is **ON**
 
 #### Add the Dictation apps to Accessibility:
 
-1. In the same Accessibility settings, click **+** again
+1. Click **+** again
 2. Navigate to your Desktop and add `Dictation.app`
 3. Also add `Dictation Controls.app`
 4. Make sure both toggles are **ON**
@@ -201,9 +222,45 @@ pkill -f "src.main"
 
 ### Hotkey not working
 
-- Grant Accessibility permissions to both Terminal.app and Dictation.app
-- Restart the app after granting permissions
-- Make sure no other app is using `Cmd+Shift+Space`
+This is usually a permissions issue. The hotkey uses `pynput` which requires specific Accessibility permissions.
+
+**Step 1: Add the Python interpreter to Accessibility**
+
+This is the most common fix. Find your Python path:
+```bash
+cd ~/Desktop/dictation-app
+ls -la venv/bin/python3
+```
+
+Then add that path to **System Settings → Privacy & Security → Accessibility**.
+
+For example, if the output shows:
+```
+venv/bin/python3 -> /Users/you/miniconda3/bin/python3
+```
+
+Add `/Users/you/miniconda3/bin/python3` (or `python3.13` if that's the actual binary) to Accessibility.
+
+If you're using conda/miniconda, also add the python.app bundle:
+```
+/Users/YOUR_USERNAME/miniconda3/python.app
+```
+
+**Step 2: Also add these to Accessibility:**
+- `/Applications/Utilities/Terminal.app`
+- `~/Desktop/Dictation.app`
+- `~/Desktop/Dictation Controls.app`
+
+**Step 3: Check for conflicts**
+- Open **System Settings → Keyboard → Keyboard Shortcuts → Input Sources**
+- Make sure `Cmd+Shift+Space` isn't assigned to "Select the previous input source"
+- If it is, disable it or change it to a different shortcut
+
+**Step 4: Restart the app**
+```bash
+pkill -f "src.main"
+# Then relaunch the app
+```
 
 ### Text not appearing
 
