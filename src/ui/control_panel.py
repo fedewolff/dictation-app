@@ -1,7 +1,8 @@
 """Standalone control panel window for dictation app settings."""
 
 import threading
-from typing import Callable, Optional
+from datetime import datetime
+from typing import Callable, List, Optional
 from pathlib import Path
 import yaml
 
@@ -27,12 +28,29 @@ try:
         NSBox,
         NSBoxSeparator,
         NSScrollView,
+        NSTableView,
+        NSTableColumn,
+        NSScrollView,
+        NSTableViewStylePlain,
     )
     from Foundation import NSObject
 
     HAS_APPKIT = True
 except ImportError:
     HAS_APPKIT = False
+
+try:
+    import pyperclip
+    HAS_PYPERCLIP = True
+except ImportError:
+    HAS_PYPERCLIP = False
+
+# Import clipboard history
+try:
+    from src.system.clipboard_history import get_history, HistoryEntry
+    HAS_HISTORY = True
+except ImportError:
+    HAS_HISTORY = False
 
 
 class ControlPanelWindow:
@@ -76,6 +94,12 @@ class ControlPanelWindow:
         self._state = "idle"
         self._has_context = False
 
+        # History UI elements
+        self._history_list_view = None
+        self._history_buttons: List[NSButton] = []
+        self._history_container = None
+        self._selected_history_index = -1
+
         # Load current config
         self._load_config()
 
@@ -101,7 +125,7 @@ class ControlPanelWindow:
     def _setup_window(self) -> None:
         """Set up the control panel window using AppKit."""
         width = 380
-        height = 650
+        height = 750  # Increased height for history section
 
         # Get screen dimensions and center window
         screen = NSScreen.mainScreen()
@@ -139,7 +163,7 @@ class ControlPanelWindow:
         scroll_view.setAutohidesScrollers_(True)
         scroll_view.setBorderType_(0)
 
-        content_height = 780
+        content_height = 1100  # Increased for history section
         content_view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, width, content_height))
 
         y_pos = content_height - 50
@@ -482,6 +506,71 @@ class ControlPanelWindow:
         quit_btn.setAction_("quitApp:")
         content_view.addSubview_(quit_btn)
 
+        y_pos -= 50
+
+        # Separator
+        sep5 = NSBox.alloc().initWithFrame_(NSMakeRect(20, y_pos, width - 40, 1))
+        sep5.setBoxType_(NSBoxSeparator)
+        content_view.addSubview_(sep5)
+
+        y_pos -= 30
+
+        # === CLIPBOARD HISTORY SECTION ===
+        history_title = NSTextField.alloc().initWithFrame_(
+            NSMakeRect(20, y_pos, width - 40, 20)
+        )
+        history_title.setStringValue_("Clipboard History")
+        history_title.setBezeled_(False)
+        history_title.setDrawsBackground_(False)
+        history_title.setEditable_(False)
+        history_title.setSelectable_(False)
+        history_title.setFont_(NSFont.boldSystemFontOfSize_(14))
+        content_view.addSubview_(history_title)
+
+        y_pos -= 30
+
+        # History action buttons
+        refresh_btn = NSButton.alloc().initWithFrame_(
+            NSMakeRect(20, y_pos, 100, 28)
+        )
+        refresh_btn.setTitle_("Refresh")
+        refresh_btn.setBezelStyle_(NSBezelStyleRounded)
+        refresh_btn.setTarget_(self)
+        refresh_btn.setAction_("refreshHistory:")
+        content_view.addSubview_(refresh_btn)
+
+        clear_history_btn = NSButton.alloc().initWithFrame_(
+            NSMakeRect(130, y_pos, 100, 28)
+        )
+        clear_history_btn.setTitle_("Clear All")
+        clear_history_btn.setBezelStyle_(NSBezelStyleRounded)
+        clear_history_btn.setTarget_(self)
+        clear_history_btn.setAction_("clearHistory:")
+        content_view.addSubview_(clear_history_btn)
+
+        y_pos -= 35
+
+        # History list container (scrollable area for history items)
+        history_scroll = NSScrollView.alloc().initWithFrame_(
+            NSMakeRect(20, y_pos - 250, width - 40, 280)
+        )
+        history_scroll.setHasVerticalScroller_(True)
+        history_scroll.setHasHorizontalScroller_(False)
+        history_scroll.setAutohidesScrollers_(True)
+        history_scroll.setBorderType_(1)  # NSLineBorder
+
+        # Container view for history items
+        self._history_container = NSView.alloc().initWithFrame_(
+            NSMakeRect(0, 0, width - 60, 280)
+        )
+        self._history_container.setWantsLayer_(True)
+
+        history_scroll.setDocumentView_(self._history_container)
+        content_view.addSubview_(history_scroll)
+
+        # Load initial history
+        self._populate_history()
+
         scroll_view.setDocumentView_(content_view)
         self._window.setContentView_(scroll_view)
 
@@ -659,6 +748,192 @@ class ControlPanelWindow:
         """Handle quit button click."""
         if self.on_quit:
             self.on_quit()
+
+    def refreshHistory_(self, sender) -> None:
+        """Handle refresh history button click."""
+        self._populate_history()
+
+    def clearHistory_(self, sender) -> None:
+        """Handle clear history button click."""
+        if HAS_HISTORY:
+            history = get_history()
+            history.clear()
+            self._populate_history()
+
+    def _populate_history(self) -> None:
+        """Populate the history list with entries."""
+        if not HAS_APPKIT or not self._history_container:
+            return
+
+        def _update():
+            # Clear existing buttons
+            for btn in self._history_buttons:
+                btn.removeFromSuperview()
+            self._history_buttons.clear()
+
+            if not HAS_HISTORY:
+                # Show message that history is not available
+                no_history_label = NSTextField.alloc().initWithFrame_(
+                    NSMakeRect(10, 240, 300, 30)
+                )
+                no_history_label.setStringValue_("History module not available")
+                no_history_label.setBezeled_(False)
+                no_history_label.setDrawsBackground_(False)
+                no_history_label.setEditable_(False)
+                no_history_label.setSelectable_(False)
+                no_history_label.setTextColor_(NSColor.secondaryLabelColor())
+                self._history_container.addSubview_(no_history_label)
+                return
+
+            history = get_history()
+            entries = history.get_recent(20)  # Show last 20 entries
+
+            if not entries:
+                # Show message that history is empty
+                empty_label = NSTextField.alloc().initWithFrame_(
+                    NSMakeRect(10, 240, 300, 30)
+                )
+                empty_label.setStringValue_("No history yet - dictate something!")
+                empty_label.setBezeled_(False)
+                empty_label.setDrawsBackground_(False)
+                empty_label.setEditable_(False)
+                empty_label.setSelectable_(False)
+                empty_label.setTextColor_(NSColor.secondaryLabelColor())
+                self._history_container.addSubview_(empty_label)
+                self._history_buttons.append(empty_label)
+                return
+
+            # Calculate container height based on number of entries
+            item_height = 60
+            container_height = max(280, len(entries) * item_height + 10)
+            container_width = self._history_container.frame().size.width
+
+            self._history_container.setFrameSize_(
+                NSMakeRect(0, 0, container_width, container_height).size
+            )
+
+            y_pos = container_height - item_height
+
+            for idx, entry in enumerate(entries):
+                # Format timestamp
+                try:
+                    dt = datetime.fromisoformat(entry.timestamp)
+                    time_str = dt.strftime("%m/%d %H:%M")
+                except (ValueError, AttributeError):
+                    time_str = "Unknown"
+
+                # Truncate text for display
+                display_text = entry.text[:80]
+                if len(entry.text) > 80:
+                    display_text += "..."
+
+                # Mode indicator
+                mode_indicator = "✨" if entry.mode == "drafting" else "📝"
+
+                # Create container for this entry
+                entry_view = NSView.alloc().initWithFrame_(
+                    NSMakeRect(5, y_pos, container_width - 10, item_height - 5)
+                )
+
+                # Text label
+                text_label = NSTextField.alloc().initWithFrame_(
+                    NSMakeRect(5, 22, container_width - 80, 30)
+                )
+                text_label.setStringValue_(f"{mode_indicator} {display_text}")
+                text_label.setBezeled_(False)
+                text_label.setDrawsBackground_(False)
+                text_label.setEditable_(False)
+                text_label.setSelectable_(True)
+                text_label.setFont_(NSFont.systemFontOfSize_(11))
+                text_label.setLineBreakMode_(4)  # NSLineBreakByTruncatingTail
+                entry_view.addSubview_(text_label)
+
+                # Time and language label
+                lang_str = f" ({entry.language})" if entry.language else ""
+                meta_label = NSTextField.alloc().initWithFrame_(
+                    NSMakeRect(5, 5, container_width - 80, 18)
+                )
+                meta_label.setStringValue_(f"{time_str}{lang_str}")
+                meta_label.setBezeled_(False)
+                meta_label.setDrawsBackground_(False)
+                meta_label.setEditable_(False)
+                meta_label.setSelectable_(False)
+                meta_label.setFont_(NSFont.systemFontOfSize_(10))
+                meta_label.setTextColor_(NSColor.secondaryLabelColor())
+                entry_view.addSubview_(meta_label)
+
+                # Copy button
+                copy_btn = NSButton.alloc().initWithFrame_(
+                    NSMakeRect(container_width - 70, 15, 60, 25)
+                )
+                copy_btn.setTitle_("Copy")
+                copy_btn.setBezelStyle_(NSBezelStyleRounded)
+                copy_btn.setFont_(NSFont.systemFontOfSize_(11))
+                copy_btn.setTag_(idx)
+                copy_btn.setTarget_(self)
+                copy_btn.setAction_("copyHistoryItem:")
+                entry_view.addSubview_(copy_btn)
+
+                self._history_container.addSubview_(entry_view)
+                self._history_buttons.append(entry_view)
+
+                y_pos -= item_height
+
+        self._run_on_main_thread(_update)
+
+    def copyHistoryItem_(self, sender) -> None:
+        """Handle copy button click for a history item."""
+        index = sender.tag()
+
+        if not HAS_HISTORY:
+            return
+
+        history = get_history()
+        entry = history.get_by_index(index)
+
+        if entry:
+            # Copy to clipboard
+            if HAS_PYPERCLIP:
+                try:
+                    pyperclip.copy(entry.text)
+                    print(f"Copied history item {index} to clipboard")
+                    # Update button text temporarily
+                    self._show_copy_feedback(sender)
+                except Exception as e:
+                    print(f"Error copying to clipboard: {e}")
+            else:
+                # Fallback to pbcopy on macOS
+                import subprocess
+                try:
+                    process = subprocess.Popen(
+                        ['pbcopy'],
+                        stdin=subprocess.PIPE,
+                        env={'LANG': 'en_US.UTF-8'}
+                    )
+                    process.communicate(entry.text.encode('utf-8'))
+                    print(f"Copied history item {index} to clipboard (via pbcopy)")
+                    self._show_copy_feedback(sender)
+                except Exception as e:
+                    print(f"Error copying to clipboard: {e}")
+
+    def _show_copy_feedback(self, button) -> None:
+        """Show temporary feedback after copying."""
+        def _update():
+            original_title = button.title()
+            button.setTitle_("Copied!")
+            button.setEnabled_(False)
+
+            def _restore():
+                import time
+                time.sleep(1.0)
+                def _do_restore():
+                    button.setTitle_(original_title)
+                    button.setEnabled_(True)
+                self._run_on_main_thread(_do_restore)
+
+            threading.Thread(target=_restore, daemon=True).start()
+
+        self._run_on_main_thread(_update)
 
     def _run_on_main_thread(self, func) -> None:
         """Run a function on the main thread."""

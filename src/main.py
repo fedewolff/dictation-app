@@ -20,6 +20,7 @@ from src.audio.capture import AudioCapture
 from src.audio.vad import VoiceActivityDetector
 from src.config.settings import Settings
 from src.generation.drafting import MessageDrafter
+from src.system.clipboard_history import get_history
 from src.system.hotkey import HotkeyListener
 from src.system.insertion import TextInserter
 from src.system.tray import MenuBarApp
@@ -265,6 +266,13 @@ class DictationApp:
             success = self.inserter.insert(final_text)
             if success:
                 print("Text inserted successfully")
+                # Save to clipboard history
+                mode = "drafting" if self.generation_enabled else "transcription"
+                get_history().add(
+                    text=final_text,
+                    language=result.language,
+                    mode=mode,
+                )
             else:
                 print("Failed to insert text")
                 self.indicator.set_text("❌ Insert failed")
@@ -515,6 +523,13 @@ class DictationApp:
                 self.indicator.update("done")
                 self.indicator.set_text("✓ Copied!")
                 print("Text copied to clipboard - paste with Cmd+V")
+                # Save to clipboard history
+                mode = "drafting" if self.generation_enabled else "transcription"
+                get_history().add(
+                    text=final_text,
+                    language=result.language,
+                    mode=mode,
+                )
             else:
                 self.indicator.update("error")
                 print("Failed to copy to clipboard")
